@@ -1,11 +1,9 @@
-import { OpenAIApi, Configuration } from "openai";
+import OpenAI from "openai";
 import net from "node:net";
 
-const configuration = new Configuration({
+const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
-  });
-
-const openai = new OpenAIApi(configuration);
+});
 const connectedClients = new Map();
 const systemPrompt = `You're a fictionnal IRC server (GptIRC) used for a simulation.
 The IRC client we will be using undertands old fashion IRC protocol and the irc commands will be represented by the coming prompts where each line represent a command from the irc client you will need to execute in the same order the commands came.
@@ -32,8 +30,8 @@ function socketsTick() {
         data.pending = []
         console.log("Calling completion...")
         data.thinking = true;
-        openai.createChatCompletion({
-            model: "gpt-4",
+        openai.chat.completions.create({
+            model: "gpt-4o",
             temperature : 0.5,
             messages: [
                 {
@@ -43,7 +41,7 @@ function socketsTick() {
                 ...data.history
             ]
         }).then((response) => {
-            const replied = response.data.choices[0].message.content
+            const replied = response.choices[0].message.content
 
             socket.write(replied + "\r\n");
             data.history.push({
